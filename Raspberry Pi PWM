@@ -1,0 +1,60 @@
+import RPi.GPIO as GPIO
+import time
+GPIO.setmode(GPIO.BCM)
+
+LED1 = 4
+E2C_PIN1 = 3
+E2C_PIN2 = 2
+GPIO.setup(E2C_PIN1,GPIO.OUT)
+GPIO.setup(E2C_PIN2,GPIO.IN)
+GPIO.setup(LED1,GPIO.OUT)
+
+
+GPIO.setup(LED1,GPIO.OUT)
+pwmLED = GPIO.PWM(LED1,300)
+pwmLED.start(50)
+
+try:
+    while True:
+        GPIO.output(E2C_PIN1, False)
+        print("Sensor Reading")
+        time.sleep(0.50)
+        GPIO.output(E2C_PIN1, True)
+        time.sleep(0.00001)
+        GPIO.output(E2C_PIN1, False)
+        while GPIO.input(E2C_PIN2) ==0:
+            pulse_start_time = time.time()
+            
+        while GPIO.input(E2C_PIN2) ==1:
+            pulse_end_time = time.time()
+            
+        pulse_duration_time = pulse_end_time - pulse_start_time
+        
+        distance = pulse_duration_time * 17150
+        
+        distance = round(distance, 2)
+        
+        print("Distance: ",distance," cm")
+        if(distance >0 and distance <= 15):
+            print("Too Near")
+            pwmLED.ChangeDutyCycle(00) #intensity of ligth 0%
+            
+        elif(distance > 15 and distance <= 25):
+            print("Near")
+            pwmLED.ChangeDutyCycle(25) #intensity of ligth 25%
+        
+        elif(distance >25 and distance <= 35):
+            print("Perfect distance")
+            pwmLED.ChangeDutyCycle(50) #intensity of ligth 50%
+        
+        elif(distance > 35 and distance <= 45):
+            print ("Far")
+            pwmLED.ChangeDutyCycle(75) #intensity of ligth 75%
+        
+        elif(distance > 45):
+            print("Too Far")
+            pwmLED.ChangeDutyCycle(100) #intensity of ligth 100%
+except KeyboardInterrupt:
+    print("Cleaning up!")
+    gpio.cleanup()
+    exit
